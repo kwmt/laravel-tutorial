@@ -7,6 +7,15 @@ MAINTAINER Yasutaka Kawamoto
 CMD ["/bin/bash"]
 
 ARG APP_NAME=app
+
+#************************************************************
+# serviceコマンドを使えるようにする
+######` service` コマンドが入ってないため、 `initscripts` をインストールする
+####### centos7では `service` コマンドは使えるが、systemctlにリダイレクトされる
+#### https://github.com/CentOS/sig-cloud-instance-images/issues/28#issuecomment-135513946
+#************************************************************
+RUN yum install -y sudo
+
 #************************************************************
 # phpをインストール
 #************************************************************
@@ -27,7 +36,7 @@ RUN yum -y install --enablerepo=remi,remi-php70 php php-common  php-mbstring php
 
 #### zip extensionをインストール
 # peclでcコンパイラが見つからないって言われるので
-RUN yum install -y gcc
+RUN yum install -y gcc zlib-devel
 # として、
 RUN pecl install zip
 
@@ -43,8 +52,9 @@ COPY templates/php.ini /etc/php.ini
 RUN rpm -ivh  http://dev.mysql.com/get/mysql57-community-release-el7-9.noarch.rpm
 RUN yum install -y mysql-community-server
 
-RUN service mysqld start
+RUN echo 'rootpass' | passwd --stdin mysql  
 
+RUN sudo -u mysql mysqld &
 # urlは、mysqlの公式にあるRedhubLinux7用のダウンロードリンクをコピーした
 # http://dev.mysql.com/downloads/repo/yum/
 
@@ -58,18 +68,13 @@ RUN yum install -y httpd mod_ssl
 
 
 #### apacheを起動
-######` service` コマンドが入ってないため、 `initscripts` をインストールする
-####### centos7では `service` コマンドは使えるが、systemctlにリダイレクトされる
-#### https://github.com/CentOS/sig-cloud-instance-images/issues/28#issuecomment-135513946
-
-RUN yum install -y initscripts
 RUN chown -R apache:apache /var/www/ && \
 	chmod -R 775 /var/www/
 
 COPY templates/httpd.conf /etc/httpd/conf/httpd.conf
 RUN  sed -i 's#DocumentRoot \"/var/www/html\"#DocumentRoot \"/var/www/'${APP_NAME}'/public\"#g' /etc/httpd/conf/httpd.conf
 
-RUN service httpd start
+RUN httpd
 #************************************************************
 # dockerコンテナ起動方法の例
 #************************************************************
@@ -79,10 +84,9 @@ RUN service httpd start
 
 #************************************************************
 # composerのインストール
+# その後、PATHが遠ってるところに移動
 #************************************************************
-# // PATHが遠ってるところに移動
-
-RUN curl -sS https://getcomposer.org/installer | php \
+RUN curl -sS https://getcomposer.org/installer | php && \
 	mv composer.phar /usr/local/bin/composer
 
 RUN yum install -y git
@@ -99,8 +103,7 @@ RUN groupadd docker
 ###  docker ユーザーを新規追加してdockerグループに所属させる。-sはログインシェル
 RUN useradd -g docker -d /home/docker -s /bin/bash docker 
 ###  実際にホームディレクトリは作成されないので、作成する
-RUN mkdir /home/docker && \
-	chown docker:docker /home/docker
+RUN chown docker:docker /home/docker
 
 
 #************************************************************
@@ -108,20 +111,19 @@ RUN mkdir /home/docker && \
 #************************************************************
 ### dockerユーザーに切り替える
 # //    composerを実行するために必要
-RUN su docker
-
-RUN mkdir -p $HOME/.composer/vendor/bin && \
-	composer global require "laravel/installer"
-
-
-#// PATHを通す
-RUN echo 'export PATH=~/.composer/vendor/bin:$PATH' >> ~/.bash_profile && \
-	source ~/.bash_profile
+RUN sudo -u docker mkdir -p /home/docker/.composer/vendor/bin
+RUN sudo -u docker /usr/local/bin/composer global require "laravel/installer"
+RUN sudo -u docker echo 'export PATH=~/.composer/vendor/bin:$PATH' >> /home/docker/.bash_profile && \
+	source /home/docker/.bash_profile
 
 
-WORKDIR /var/www/
-RUN laravel new $APP_NAME
+#************************************************************
+# laravelプロジェクトを作成
+#************************************************************
+RUN	cd /var/www/ && \
+	sudo -u docker /home/docker/.composer/vendor/bin/laravel new $APP_NAME
 
+EXPOSE 80
 
 
 
