@@ -15,4 +15,11 @@
 [root@57febdef38fb /]# httpd
 ```
 
+## ブラウザで確認
 
+% docker-machine ip
+192.168.99.100
+
+ブラウザに `http://192.168.99.100:8000` を入力
+
+![Laravelトップ](./images/larave-top.png )
