@@ -3,8 +3,6 @@ FROM centos:7
 MAINTAINER Yasutaka Kawamoto
 
 
-## https://github.com/CentOS/sig-cloud-instance-images/issues/28#issuecomment-135513946
-CMD ["/bin/bash"]
 
 ARG APP_NAME=app
 
@@ -15,6 +13,8 @@ ARG APP_NAME=app
 #### https://github.com/CentOS/sig-cloud-instance-images/issues/28#issuecomment-135513946
 #************************************************************
 RUN yum install -y sudo
+# To avoid error: sudo: sorry, you must have a tty to run sudo
+RUN sed -i -e "s/Defaults    requiretty.*/ #Defaults    requiretty/g" /etc/sudoers
 
 #************************************************************
 # phpをインストール
@@ -36,7 +36,7 @@ RUN yum -y install --enablerepo=remi,remi-php70 php php-common  php-mbstring php
 
 #### zip extensionをインストール
 # peclでcコンパイラが見つからないって言われるので
-RUN yum install -y gcc zlib-devel
+RUN yum install -y make gcc zlib-devel
 # として、
 RUN pecl install zip
 
@@ -46,7 +46,7 @@ RUN pecl install zip
 COPY templates/php.ini /etc/php.ini
 
 #************************************************************
-## mysqlのインストール・起動
+## mysqlのインストール
 #************************************************************
 
 RUN rpm -ivh  http://dev.mysql.com/get/mysql57-community-release-el7-9.noarch.rpm
@@ -54,12 +54,11 @@ RUN yum install -y mysql-community-server
 
 RUN echo 'rootpass' | passwd --stdin mysql  
 
-RUN sudo -u mysql mysqld &
 # urlは、mysqlの公式にあるRedhubLinux7用のダウンロードリンクをコピーした
 # http://dev.mysql.com/downloads/repo/yum/
 
 #************************************************************
-# apacheのインストールと起動
+# apacheのインストール
 #************************************************************
 RUN yum install -y httpd mod_ssl
 
@@ -73,14 +72,6 @@ RUN chown -R apache:apache /var/www/ && \
 
 COPY templates/httpd.conf /etc/httpd/conf/httpd.conf
 RUN  sed -i 's#DocumentRoot \"/var/www/html\"#DocumentRoot \"/var/www/'${APP_NAME}'/public\"#g' /etc/httpd/conf/httpd.conf
-
-RUN httpd
-#************************************************************
-# dockerコンテナ起動方法の例
-#************************************************************
-### % docker run --privileged --name="httpd"  -p 8000:80 -d -v ~/docker/laravel-test/volume:/home/docker/volume centos-apache-php-mysql /sbin/init
-### % docker exec -it httpd /bin/bash
-#####参考: http://qiita.com/yunano/items/9637ee21a71eba197345
 
 #************************************************************
 # composerのインストール
@@ -105,7 +96,6 @@ RUN useradd -g docker -d /home/docker -s /bin/bash docker
 ###  実際にホームディレクトリは作成されないので、作成する
 RUN chown docker:docker /home/docker
 
-
 #************************************************************
 # laravelのインストール
 #************************************************************
@@ -117,13 +107,50 @@ RUN sudo -u docker echo 'export PATH=~/.composer/vendor/bin:$PATH' >> /home/dock
 	source /home/docker/.bash_profile
 
 
+##### TODO:laravelプロジェクトをdockerfileで作成したい
+##### 現状、下記エラーが出てしまう。
+#####-------------------------------
+#####
+##### PHP Warning:  proc_open(/dev/tty): failed to open stream: No such device or address in /home/docker/.composer/vendor/symfony/process/Process.php on line 294
+##### 
+##### 
+##### [Symfony\Component\Process\Exception\RuntimeException]  
+#####   Unable to launch a new process.                         
+##### 
+##### 
+##### new [--dev] [--5.2] [--] [<name>]
+##### 
 #************************************************************
 # laravelプロジェクトを作成
 #************************************************************
-RUN	cd /var/www/ && \
-	sudo -u docker /home/docker/.composer/vendor/bin/laravel new $APP_NAME
+# RUN	su docker && \
+# 	cd /var/www/ && \
+# 	/home/docker/.composer/vendor/bin/laravel new $APP_NAME
+
+#************************************************************
+# サービスの起動
+#************************************************************
+# RUN httpd
+RUN sudo -u mysql mysqld &
 
 EXPOSE 80
 
+## https://github.com/CentOS/sig-cloud-instance-images/issues/28#issuecomment-135513946
+CMD ["/bin/bash"]
 
 
+#************************************************************
+# dockerコンテナ起動方法の例
+#************************************************************
+# % docker run --name="laravel" -p 8000:80 -d -v ~/docker/laravel-test/:/var/www -it kwmt/centos-laravel /bin/bash 
+# % docker attach laravel
+# root@57febdef38fb /]# su docker
+# [docker@57febdef38fb /]$ cd /var/www/
+# [docker@57febdef38fb www]$ source ~/.bash_profile 
+# [docker@57febdef38fb www]$ laravel new app
+# [docker@57febdef38fb www]$ exit
+# [root@57febdef38fb /]# httpd
+# 
+# 
+# 
+# 
