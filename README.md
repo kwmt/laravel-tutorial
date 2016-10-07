@@ -22,4 +22,4 @@
 
 ブラウザに `http://192.168.99.100:8000` を入力
 
-![Laravelトップ](./images/larave-top.png )
+![Laravelトップ](https://raw.github.com/kwmt/laravel-tutorial/master/images/laravel-top.png)
