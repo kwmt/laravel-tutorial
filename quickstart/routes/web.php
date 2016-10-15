@@ -12,7 +12,10 @@
 */
 
 Route::get('/', function () {
-    return view('task');
+    $tasks = Task::orderBy('created_at', 'asc')->get();
+    return view('task', [
+        'tasks' => $tasks
+    ]);
 });
 
 Route::post('/task', function (Request $request) {
