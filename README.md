@@ -61,3 +61,20 @@ default   -        virtualbox   Running   tcp://192.168.99.100:2376           v1
 ブラウザに `http://192.168.99.100:8000` を入力
 
 ![Laravelトップ](https://raw.github.com/kwmt/laravel-tutorial/master/images/laravel-top.png)
+
+
+
+## チュートリアル
+
+```
+$ su docker
+$ cd /var/www
+$ /usr/local/bin/composer create-project laravel/laravel quickstart --prefer-dist
+$ cd quickstart/
+$ /usr/local/bin/composer install
+ポート80でListenさせたいので、rootでport80を指定する
+$ exit
+# php artisan serve --port=80 --host=172.17.0.2  
+
+```
+
