@@ -33,5 +33,41 @@
     </div>
 
     <!-- TODO: Current Tasks -->
+    <!-- Current Tasks -->
+    @if (count($tasks) > 0)
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Current Tasks
+            </div>
+
+            <div class="panel-body">
+                <table class="table table-striped task-table">
+
+                    <!-- Table Headings -->
+                    <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                    </thead>
+
+                    <!-- Table Body -->
+                    <tbody>
+                    @foreach ($tasks as $task)
+                        <tr>
+                            <!-- Task Name -->
+                            <td class="table-text">
+                                <div>{{ $task->name }}</div>
+                            </td>
+                            <td>
+                                <!-- TODO: Delete Button -->
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 </div>
 @endsection
