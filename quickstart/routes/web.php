@@ -26,6 +26,12 @@ Route::post('/task', function (Request $request) {
             ->withErrors($validator);
     }
 
+    $task = new Task;
+    $task->name = $request->name;
+    $task->save();
+
+    return redirect('/');
+
 });
 
 Route::delete('/task/{task}', function () {
