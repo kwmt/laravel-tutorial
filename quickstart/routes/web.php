@@ -10,6 +10,9 @@
 | to using a Closure or controller method. Build something great!
 |
 */
+use App\Task;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     $tasks = Task::orderBy('created_at', 'asc')->get();
