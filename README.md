@@ -107,4 +107,6 @@ Migrated: 2014_10_12_100000_create_password_resets_table
 Migrated: 2016_10_15_072416_create_tasks_table
 ```
 
+あとは下記を進めていけばいけそう
 
+http://qiita.com/shosho/items/f34276561a342dc85180#5-eloquent-orm
