@@ -89,8 +89,22 @@ http://qiita.com/shosho/items/f34276561a342dc85180#3-%E3%83%AB%E3%83%BC%E3%83%88
 
 http://qiita.com/shosho/items/f34276561a342dc85180#4-%E3%83%9E%E3%82%A4%E3%82%B0%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3
 
+マイグレーションファイル作成
+
 ```
 [root@57febdef38fb quickstart]# php artisan make:migration create_tasks_table --create=tasks
 Created Migration: 2016_10_15_072416_create_tasks_table
 ```
+
+マイグレーション実行
+
+
+```
+root@57febdef38fb quickstart]# php artisan migrate
+Migration table created successfully.
+Migrated: 2014_10_12_000000_create_users_table
+Migrated: 2014_10_12_100000_create_password_resets_table
+Migrated: 2016_10_15_072416_create_tasks_table
+```
+
 
