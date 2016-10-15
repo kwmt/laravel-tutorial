@@ -12,7 +12,7 @@
 */
 
 Route::get('/', function () {
-    //
+    return view('task');
 });
 
 Route::post('/task', function () {
