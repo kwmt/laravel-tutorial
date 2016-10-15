@@ -69,6 +69,7 @@ default   -        virtualbox   Running   tcp://192.168.99.100:2376           v1
 ```
 $ su docker
 $ cd /var/www
+## 
 $ /usr/local/bin/composer create-project laravel/laravel quickstart --prefer-dist
 $ cd quickstart/
 $ /usr/local/bin/composer install
@@ -76,5 +77,20 @@ $ /usr/local/bin/composer install
 $ exit
 # php artisan serve --port=80 --host=172.17.0.2  
 
+```
+
+### 画面を作成
+
+http://qiita.com/shosho/items/f34276561a342dc85180#3-%E3%83%AB%E3%83%BC%E3%83%88%E7%94%BB%E9%9D%A2%E3%81%AE%E4%BD%9C%E3%82%8A%E6%96%B9
+
+までやる
+
+### マイグレーション
+
+http://qiita.com/shosho/items/f34276561a342dc85180#4-%E3%83%9E%E3%82%A4%E3%82%B0%E3%83%AC%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3
+
+```
+[root@57febdef38fb quickstart]# php artisan make:migration create_tasks_table --create=tasks
+Created Migration: 2016_10_15_072416_create_tasks_table
 ```
 
